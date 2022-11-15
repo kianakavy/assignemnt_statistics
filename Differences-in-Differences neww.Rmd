@@ -1,0 +1,213 @@
+---
+title: "Differences-in-Differences"
+author: "Kiana Kavyar"
+date: "`r format(Sys.Date())`"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+bibliography: stock.bib
+---
+
+
+### What is Differences-in-Differences?
+Differences-in-Differences (DiD) is a statistical method that uses panel data to identify effects of a certain group (usually Treatment and Control group) whilst keeping the effect of "time" in mind. Unlike simple before and after comparisons, that can only be used for two different time periods, DiD can be extended to multiple different time periods using panel data regression methods (e.g. fixed effects regression). "Panel data (also called longitudinal data) refers to data for n different entities observed at T different time periods" - (@Stock2019, p.362). DiD is often used in quasi-experiments, which are referred to as natural experiments, due to ethical and monetary reasons one can't simply create a control group but has to look for a group that could act as one. Just like John Snow did when he wanted to find out the reason for the spreading of Cholera (@AngristPischke+2008, p.227). He compared two water companies in England, of which the first water company drew its water from the Thames River, this company was assigned as the treatment group. The other water company which didn't draw its water from the Thames River was then assigned as the control group. In reality Snow wasn't able to randomly assign people to, either drink water coming from the Thames River, or from a different source. This was a perfect solution for him to still be able to implement his experiment.
+<br>
+<br>
+When wanting to make a causal inference using the DiD design one has to take a look at the DiD estimator $\hat\beta^{DiD}$ which looks like the following:
+$$\hat\beta^{DiD} = (\overline{Y}_{T, after} - \overline{Y}_{C, after}) - (\overline{Y}_{T, before} - \overline{Y}_{C, before})= \Delta\overline{Y}_{Treatment} - \Delta\overline{Y}_{Control} $$
+<br>
+<br>
+Now I will go on to explain the equation above, a bit further to get a better understanding of what it does. First one computes the difference for post- and pre-treatment for the treatment group, and also the difference for post- and pre-treatment for the control group (i.e. $\overline{Y}_{T, after} - \overline{Y}_{T, before}$ and $\overline{Y}_{C, after} - \overline{Y}_{C, before}$). Whereas **T** stands for the treatment and **C** for the control group. Here $\overline{Y}_{T, after}$ stands for the sample average for the treatment group after the treatment (e.g. new law) has been introduced. By focusing on the change in $Y$ over the course of the experiment, the DiD estimator removes the influence of initial values of $Y$ that vary between the treatment and control groups, such as state fixed effects.
+<br>
+Then one has to make a difference out of these two differences (i.e. $\Delta\overline{Y}_{Treatment} - \Delta\overline{Y}_{Control}$). Hence the name “Differences in Differences”. <br>
+<br>
+However, there are a few assumptions that need to hold to make use of DiD estimation. The first thing that would come in mind are the four OLS assumptions, these need to be adjusted by including the variable of time, due to not only having individual, $i$ for which $i \in \{1,…,n\}$, but also time, $t$ for which $t \in \{1,…,T\}$ (@Stock2019, p.375). The adjusted OLS assumptions for fixed effects regression, which is a panel data regression method (as stated above), has the following adjusted OLS assumptions:
+<br>
+<br>
+OLS 1: Our error term, $u_{it}$, has a conditional mean 0. Meaning: $E(u_{it}\mid X_{i1},...,X_{iT},\alpha_{i})=0$
+<br>
+OLS 2: $(X_{i1},...,X_{iT},u_{i1},...,u_{iT})$, for $i = 1,...,n$ are i.i.d. draws from their joint distribution
+<br>
+OLS 3: Large outliers are unlikely: $(X_{it},u_{it})$ have nonzero finite fourth moments
+<br>
+OLS 4: There is no perfect multicollinearity
+<br>
+<br>
+Now comes the most important assumption in DiD, that is the **parallel trends assumption**, to ensure internal validity of the DiD estimator. The parallel trends assumption states that in the absence of treatment (e.g. a new law that has been passed), both control and treatment would follow the same trends but just in a parallel manner. Therefore one can conclude that omitted variables will affect both the treatment and the control similarly. When checking if the parallel trends assumption holds, one can make the control and treatment group as similar as possible. For example: When wanting to check the effect of minimum wage increase for fast food restaurants as Card and Krueger (1994) did for New Jersey and Pennsylvania (@AngristPischke+2008, p.228) one could just check graphically, if control and treatment group would have been similar in trends pre-treatment (i.e. so in the absence of treatment, here: rise in minimum wage). If that is not the case then the parallel trends assumption is violated and both the control and treatment group need to be reconsidered. However there are also solutions to account for the violation of the assumption. For example: there could be confounders (i.e. variables that influence both the dependent and independent variable) during the time of observation for treatment and control group. When taking into consideration Snow's quasi-experiment, one of the water companies might add another water source besides the one of the Thames river in-between the time in which the observations took place. One solution here would be to cut off those water companies that changed (here: added) water sources during the quasi-experiment. Another example would be if the water source from the control group would be contaminated with dirt etc. (i.e. confounder pops up across a subset of the control group). This would lead to believe that this will have either internal or external impact on the analysis, leading to biased results. Here one could solve this issue by introducing a difference-in-difference-in-differences estimation (DiDiD), which however is less precise than DiD.
+<br>
+<br>
+Now why do people make use of DiD estimation? Because it is a simple yet very effective tool allowing one to eliminate omitted variables that are e.g. invariant over time yet have an effect on $\hat\beta^{DiD}$ ($\to$ the causal effect of interest), by having multiple observations on treatment and control groups. When taking a look at the DiD estimator, $\hat\beta^{DiD}$, one can see that it is very simple to compute, hence the argument of it being a simple tool. Of course there are also other tools to make use of when looking for causal inference; but why not just use one that is simple yet very effective (DiD)? Also as mentioned in the beginning DiD estimation can be used for multiple time periods using the panel data regression methods. A panel data regression method such as the fixed effects regression can look like the following: $$Y_{it}=\beta_{1}X_{1;it}+...+\beta_{k}X_{k;it}+\alpha_{i}+u_{it} \\ i\in \{1,…,n\} \\ t\in \{1,…,T\}$$ 
+where $X_{1,it}$ is the value of the first regressor and $\alpha_{i}$ the entity specific intercept (due to only having $i$ and not also $t$ as indices it is invariant over time). There is also another way of writing down a fixed effects regression than the one above, which would be:$$Y_{it}=\beta_{0}+\beta_{1}X_{1;it}+...+\beta_{k}X_{k;it}+\gamma_{2}D2_{i}+...+\gamma_{n}Dn_{i}+u_{it} \\ i\in \{1,…,n\} \\ t\in \{1,…,T\}$$ **D** stands for Dummy (i.e. a binary variable such as female$=1$ for female and female$=0$ for male participants), which here is fixed over time but differs over individual $i$. Note that there are $n-1$ binary variables here. The question might arise why one can't just use $n$ binary variables. That is due to the **dummy variable trap**. The dummy variable trap says that one can’t include all $n$ binary variables plus a common intercept for it. The reason behind this is that it would cause perfect multicollinearity ($\to$OLS assumption 4 gets violated), so omitting one binary variable leaving one with $n-1$ would solve that issue. Then the fourth OLS assumption would hold. Intuitively if there is perfect multicollinearity, it just means that the covariate has been asked an illogical question. Regarding the example of Card and Krueger, that is if one would regress "minimum wage" onto "minimum wage". That doesn't make much sense right? A more technical reasoning is that the inverse of $X'X$ would no longer be computable. So to build a fixed effects regression one either needs $n$ “$i$” specific intercepts ($\alpha_{i}$) or a common intercept ($\beta_{0}$) and $n-1$ binary regressors ($D_{i}$).
+<br>
+<br>
+**Weakness of DiD**
+<br>
+One of the main worries when implementing DiD is the presence of autocorrelation (also referred to as *serial correlation*). Autocorrelation means that individual $i$ correlates with itself over different time periods $t$. This is something one would want to avoid because if autocorrelation is given then the coefficient of individual $i$ for given time $t$ is partly explained by the same individual $i$ for time $t-1$. This makes interpretation unnecessarily difficult, if not even impossible, but can be avoided using clustered standard errors. Clustering means that observations are being taken and put into different subgroups (i.e. clusters). Clustered standard errors are robust to heteroskedasticity and to autocorrelation. They are also a type of heteroskedasticity- and autocorrelation-robust (HAR) standard errors. The HAR standard errors allow the regression errors to have an arbitrary correlation within a cluster but assume that the regression errors are uncorrelated across clusters. Making clustered standard errors to be a quite flexible framework due to them being able to correlate within clusters. To understand why it is necessary to make use of clustered standard errors one needs to understand that regression error can be correlated over time with an entity. However this correlation does not introduce bias to the fixed effects estimator but affects the variance of the fixed effects estimator, thus its standard error, which is why there's the need to fix it. Otherwise using OLS standard errors whilst knowingly having autocorrelation, means that one computes the standard errors under false assumptions. To sum it up: it is always best to use clustered standard errors when dealing with panel data because autocorrelation cannot always be directly detected. In the paper "How much should we trust Differences-in-Differences estimates?" by Bertrand, Duflo and Mullainathan, the authors tried to raise awareness that many papers dealing with DiD estimation consider wrong standard errors and are not looking closely enough for potential autocorrelation. The authors take away the focus from potential biases which can also be a problem in DiD estimation but rather focus on using wrong standard errors for DiD estimation. Their main takeaway is that when estimating a fixed effects regression it can become subject to autocorrelation. <br> According to the authors these factors make autocorrelation an important issue in the DiD context:
+<br>
+<br>
+1. DiD relies on long time series^[note that Time series data focuses on single individual while panel data focuses on multiple individuals]
+, but authors have found an average of 16.5 periods ($\to$ quite unprecise) in other papers, for DiD estimation 
+<br>
+2. Most dependent variables ($Y_{it}$) in DiD estimation are usually highly positively  autocorrelated
+<br>
+3. The treatment variable (e.g. new law or rise in minimum wage) changes itself minimally within a state over time
+<br>
+<br>
+"These three factors reinforce each other so that the standard error for $\hat\beta$ could severely understate the standard deviation of $\hat\beta$" - (@10.1162/003355304772839588 ,p.251) . To be able to prove their assumptions the authors tested standard correction methods for serial
+correlation by using Monte Carlo simulations. The authors came up with five possible solutions for DiD estimation (i.e. standard correction methods). The first one is using **parametric methods** in which one specifies the autocorrelation structure for the error term  so that one can use those parameters to construct standard errors. This solution however does little to correct the issue of autocorrelation due to downward bias in the estimator of the autocorrelation coefficient. Another disadvantage is that when using parametric methods one has to be very precise because any misspecification of the data generating process results in inconsistent standard errors.
+Secondly there's **block bootstrap** which is a more flexible framework than the preceding one and also a variant of the bootstrap that maintains an autocorrelation structure by keeping observations that belong to the same group (e.g. state) together. It works well when having a sufficiently large group, and also better than the parametric methods, but fails to do so for small groups. The third solution was **ignoring time series information**. So to put it simply the factor of time, $t$, is being dismissed. "This solution will work only for laws
+that are passed at the same time for all the treated states." - (@10.1162/003355304772839588, p.267). If it is not given one can still adjust for it by doing the following:
+Regress $Y_{it}$ on relevant covariates ($X_{i}$, such as: state fixed effects, dummies $D_{i}$ etc.), and then divide the residuals from the treatment into two groups: before and after law introduction (our treatment). Then the estimate for the law's effect ($\hat\beta$) can be found by using an OLS regression in this two period panel (note that for a small number of groups, here: states, the t-statistic has to be adjusted). 
+The results for raw and residual aggregation perform well for a small sample size and have little over-rejection. Nonetheless they don't have much power and decrease with sample size. The fourth solution was to make use of the **Empiricial Variance-Covariance Matrix**, where one constructs a covariance matrix with 50 (due to $N=50$) identical blocks of size $T$ by $T$ ($=$ number of time periods), by taking into account the assumption that the autocorrelation process is the same among all states and there is no cross-sectional heteroskedasticity. The variance-covariance matrix of the error
+term is block diagonal, due to independence leaving the covariance at zero. The method's power is comparable to the one of the block bootstrap however this method performs even worse than block bootstrap for small sample sizes. Lastly there is **Arbitrary Variance-Covariance Matrix**, which is almost the same as the previous method, but considers the assumption of cross sectional homoskedasticity being violated. When using this method the standard errors are computed using a generalized 'White-like' formula, such as: $$W=(V'V)^{-1}(\sum_{j=1}^{N}u_{j}'u_{j})(V'V)^{-1}$$ Whereas $V$ is a matrix consisting of the independent variables (e.g. year dummies, state dummies, treatment dummies). $N$ as already mentioned stands for the total number of States. Lastly $u_{j}$ consists of: $$u_{j}=\sum_{t=1}^{T}e_{jt}v_{jt}$$ for which $e_{jt}$ stands for the empirical residual and $v_{jt}$ is a row vector of dependent variables including the constant. This estimator is consistent for fixed panel length of N, for $N \to \infty$. The authors found out that the arbitrary variance covariance matrix comes near the rejection rate for the correct covariance matrix. In total the results suggest that overestimation for small samples is similar to the empirical variance covariance matrix correction method, but higher than time series aggregation, however not as extreme as the block bootstrap. So basically hinting that block bootstrap performs the worst for all of the five methods. The conclusion of their study was that there is probably an overestimation of the t-value which leads to the belief that many DiD papers, that considered $t>2$, falsely claimed to have a significant effect when in reality there was none.
+<br>
+<br>
+**Now why all this information?**
+<br>
+This has been quite a bit of information to get a better understanding of DiD. This part of the assignment will elaborate on a project relating to DiD and the plan to implement it. In order to do so data on the prisoner count in all states of the US for the years of 2001 until 2016 has been downloaded^[Data set can be found here: https://www.kaggle.com/christophercorrea/prisoners-and-crime-in-united-states]. So that the following question can be answered: Did the legalization of recreational use of marijuana have a decreasing effect on the prisoner count? To answer this question the data set that has been worked with will be observed. Then the DiD estimator will be calculated, $\hat\beta^{DiD}$, to see the causal effect of the treatment (here: legalization) taking place. Afterwards it will be checked if the given causal effect is significant, by making use of a simple regression model. Additionally the meaning behind the values for the covariates and intercept that have been included into the regression model will be explained, and also the $R^{2}$ and adjusted-$R^{2}$ value. Throughout the analysis it will be explained why it is important to check for significance, especially in this given context. Furthermore a data generating process (DGP) will be computed, in which an autocorrelated residual will purposely be added. This is due to the last step where the OLS and clustered standard errors for the given regression will be computed, with an included autocorrelated epsilon to make use of the given information of the paper that has been talked about. So that it can be shown that the OLS standard error underestimates the real (i.e. true) standard error. When computing the autocorrelated residual an autoregressive model of order 1 (AR(1)) will be used. Generally an autoregressive model describes a regression model used in time series for forecasting events. Because unlike regular regression model, which uses a linear combination of predictors, autoregressive models, as the name suggests (from the ancient greek word;'αὐτός' = oneself), make use of past values of its variable of interest (i.e. so a model using its own values). This can be best seen here: $$Y_{t}=\alpha_{t}+\beta_{1}Y_{t-1}+\epsilon_{t}$$ Here is an AR(1). Whereas $\alpha_{t}$ is a constant, $\beta_{1}$ is the slope parameter, $Y_{t-1}$ the past value (here: $t-1$) for the variable of interest, and lastly $\epsilon_{t}$ the residual, which captures the difference between the predicted independent variable and its true value (i.e. $Y_{t}-\hat{Y}_{t}$). Just like the regression model, the autoregressive model also comes with assumptions that need to hold. These are:
+<br>
+1. $\epsilon_{t}\stackrel{iid}{\sim}N(0,\sigma^{2}_{\epsilon})$ 
+<br>
+2. $\epsilon_{t}$ is independent of $Y_{t}$ ($\to$ OLS 1)
+<br>
+3. The series $Y_{1}, Y_{2},...$ is weakly stationary.
+<br>
+<br>
+For the latter to hold it is important that: $\beta_{1}\in[-1,1]$. Before it is explained why that constraint is important there will be further elaboration on AR(1). To get a better understanding of what AR(1) is, it will be explained by usage of an example. Now, imagine you want to lose weight and start to exercise and track your caloric intake. Let's say during that process you'll weigh yourself everyday. However today's weight is dependent on yesterday's weight. This is because you won't instantly drop 20kg within a day, also your weight-loss is determined by the weight that you started off with. Basically meaning: $$Weight_{today}=\alpha_{today}+\beta_{1}Weight_{yesterday}+\epsilon_{today}$$ However additional to AR(1) there also exists AR(2), AR(3),...AR(p). To continue with the example, AR(2) can be understood as an equation that states that today's weight depends on yesterday's **and** the day before yesterday's weight. So: $$Weight_{today}=\alpha_{today}+\beta_{1}Weight_{yesterday}+\beta_{2}Weight_{the-day-before-yesterday}+\epsilon_{today}$$ So this means that for AR(p) the same concept holds, just for $p$ lagged variables. To get back to the constraint of $\beta_{1}\in[-1,1]$, if there is an absolute value larger than $1$ for $\beta_{1}$ then for AR(p) this value will keep on increasing for $Y_{p}$ so that it'll be much higher than its initial value. Hence overestimating it and therefore not being reliable for predicting future events. Lastly if time allows, there will be an implementation of one of the five standard correction methods and compare them with the already obtained standard errors. Now let's get started, shall we?
+
+```{r}
+getwd() #checking my working directory first to know where I am at
+data_prison <- read.csv('crime_and_incarceration_by_state.csv')
+head(data_prison,3) 
+data_pris_matrix <- data.matrix(data_prison) 
+head(data_pris_matrix,3)
+```
+Above the data.matrix() command has been used to change the data frame containing: integers, character and numerical values to a numerical matrix to make further calculations easier. It will be done with data on prisoners by states and year (here: "data_pris_matrix" or "data_prison"), and will attempt to answer the following question: 'Did the legalization of marijuana for recreational use decrease the prisoner count for the given States?'. In 2012 both Colorado and Washington legalized the recreational use of marijuana. For simplicity, only Colorado will be considered as a treatment group instead of both States, but Washington will be included in later cases too. As for the control group one can randomly choose any state that didn't legalize the recreational use of marijuana from the year 2001 till 2016 ($\to$ randomization). Here the state of Alabama has been chosen as a control group.
+<br>
+Let's start by getting the variables of interest to build the given DiD estimator, $\hat\beta^{DiD}$, above.
+Since the question of interest is whether the legalization of recreational use of marijuana decreased the prisoner count, $Y$ would be the prisoner count. Hence the fourth row of "data_pris_matrix". Then $Y$ (here: prisoner count) is obtained for both the Treatment and Control state separately.
+```{r}
+Y <- data_pris_matrix[,4] #816x1 dimension
+y_colo <-Y [seq(7, nrow(data_pris_matrix), 51)] #prisoner count from 01-16  but only for Colorado
+y_ala <- Y[seq(2, nrow(data_pris_matrix), 51)] #prisoner count from 01-16 but only for Alabama
+```
+The equation for the DiD estimator will be implemented, so that the influence of the Treatment (here: legalization of recreational marijuana) on the dependent variable, $Y$ (here: prisoner count), can be seen. This means the following will be programmed: $\hat\beta^{DiD} = (\overline{Y}_{Colorado, 2012} - \overline{Y}_{Alabama, 2012}) - (\overline{Y}_{Colorado, 2011} - \overline{Y}_{Alabama, 2011})$. Since the legalization (here: treatment) found place in 2012 in Colorado, this time period will be used as the "after" and therefore 2011 as "before". Let's code now!
+
+```{r}
+Y_T_after <- (y_colo[12])/2
+Y_C_after <- (y_ala[12])/2
+
+Y_T_before <- (y_colo[11])/2
+Y_C_before <- (y_ala[11])/2
+```
+$Y$ has been divided by two due to $n=2$, in order to get $\overline{Y}$. Putting all the needed variables into the known equation results in:
+
+```{r}
+beta_did <- (Y_T_after - Y_C_after) - (Y_T_before - Y_C_before)
+beta_did
+```
+As one can see $\hat\beta^{DiD}$ equals to $-744.5$ that shows, that the effect of legalization (here: treatment) did decrease the prisoner count by 744 people. Note that the number has been rounded down because half a person doesn't exist. This sounds pretty good right? When being naive, one would stop here, but something that should instantly come to mind is: if this effect really is significant. Meaning: Does the decrease in prisoner count have something to do with the legalization or might there be a different reason behind it ($\to$ no significance)? This can be tested by implementing a linear regression function, hence use the lm() function in R and check for significance on $\hat\beta^{DiD}$
+
+```{r}
+Dummy_Treat_1 <- ifelse(data_prison$jurisdiction=="COLORADO",1,0) #only Colorado
+Dummy_Treat_start_1 <- ifelse(data_prison$year=="2012",1,0) #only 2012
+beta_did_1 <- Dummy_Treat_1 * Dummy_Treat_start_1
+regression_1 <- lm(Y ~ Dummy_Treat_1 + Dummy_Treat_start_1 + beta_did_1, data = data_prison)
+summary(regression_1)
+```
+Here a dummy variable has been created for the Treatment State having a value of $1$ and all other states getting values of $0$ assigned. As already known beta shows the effect for both dummies. Note that the above regression that has been written down is the same exact thing as the equation for the DiD estimator ($\hat\beta^{DiD}$), due to only using binary variables as covariates. The only difference however is that all other states in the data set will be considered as control states (so not only Alabama). This might also be the reason why the value of $\hat\beta^{DiD}$ ($-977.3$) slightly differs compared to the one obtained above ($-744.5$). When taking a look at the results through the "summary()" function, one can see that "beta_did_1" ($\hat\beta^{DiD}$) is not significant at all. This leads to the assumption that the prison count did not decrease due to the legalization or to be more specific: the legalization is not the main reason for the decrease in prison count. Before continuing the analysis there will be further elaborations on the other values and their meaning. For the intercept a value of $28729.6$ is obtained. This means that for no legalization to have ever taken place the prisoner count is at $28729.6$. Considering only the legalization taking place in Colorado the prisoner count decreases by $7966.4$ inmates. However when solely adding the time dummy (i.e. variable for when the Treatment started) the prisoner count actually increases by $542.1$. That's quite funny because one would expect that for either dummy, linked to the legalization to decrease the prisoner count rather than increase it.  
+<br>
+Now let's see if the DiD estimator will be significant if a regression with both Treatment states involved (Colorado and Washington) will be implemented and also considering all years after 2012, where the legalization took place as the Treatment starts. 
+<br>
+```{r}
+Dummy_Treat <- ifelse(data_prison$jurisdiction=="COLORADO" | data_prison$jurisdiction=="WASHINGTON" ,1, 0)
+#Dummy for both States exposed to Treatment
+Dummy_Treat_start <- ifelse(data_prison$year>=2012,1,0) #time when treatment started 
+beta_did <- Dummy_Treat * Dummy_Treat_start
+regression <- lm(Y ~ Dummy_Treat + Dummy_Treat_start + beta_did, data = data_prison)
+summary(regression) #SE of 39580 on 812 degrees of freedom
+```
+Again the effect of legalization is not significant when taking a look at $\hat\beta^{DiD}$ (here: beta_did). Unlike before the value for $\hat\beta^{DiD}$ rose to $-251.48$. The intercept barely changed but the state Dummy sunk by roughly $300$ just like the time Dummy, which sunk by $470$. Also note that the R-squared is close to zero, meaning the amount of prisoner count's variance ($Var(Y)$) that is explained by the treatment (legalization) is more or less non-existent. This isn't good news because when having a regression model one would want a high R-squared, preferably close to $1$. In other words, one would prefer a model in which the covariates explain a lot of the dependent variable's variance ($\to R^{2}$ near $1$).
+<br>
+Additionally to that the adjusted R-squared doesn't look that much better. It is important to also look out for the adjusted R-squared values due to them correcting for the R-squared to not get any higher when adding new covariates and then falsely believing that those explain the model better when in fact they don't. Having all of this in mind one can see that the problem lies within our regression. Intuitively the first thought would be to think of omitted variable bias (OVB) resulting in such a bad (adjusted) R-squared. Using continuous variables such as "population" as an additional covariate to the regression model might solve the OVB problem but doesn't make much sense in the DiD context. Also the problem of not having a significant effect for $\hat\beta^{DiD}$ might be due to some states legalizing in-between those time periods of 2012 and 2016. Both regression models above will now be considered, but the time period from 2001-2016 will be cut off to the time period of 2001-2013, due to Alaska legalizing the recreational use of marijuana in 2014, so that the "noise" of Alaska's legalization gets diminished.
+```{r}
+Dummy_Treat_new <- ifelse(data_prison$jurisdiction=="COLORADO" | data_prison$jurisdiction=="WASHINGTON" ,1, 0) #Dummy for States exposed to Treatment
+Dummy_Treat_start_new <- ifelse(data_prison$year=="2012"|data_prison$year=="2013",1,0) #time when treatment started 
+beta_did_new <- Dummy_Treat_new * Dummy_Treat_start_new
+regression_new <- lm(Y ~ Dummy_Treat_new + Dummy_Treat_start_new + beta_did_new, data = data_prison)
+summary(regression_new)
+```
+For completeness the same regression as above, but only with Colorado as the Treatment state, will be considered.
+```{r}
+#only one treat and one time period for treatment start
+Dummy_Treat_2 <- ifelse(data_prison$jurisdiction=="COLORADO",1,0) #only Colorado
+Dummy_Treat_start_2 <- ifelse(data_prison$year=="2012"|data_prison$year=="2013",1,0) #only 2012
+beta_did_2 <- Dummy_Treat_2 * Dummy_Treat_start_2
+regression_2 <- lm(Y ~ Dummy_Treat_2 + Dummy_Treat_start_2 + beta_did_2, data = data_prison)
+summary(regression_2)
+```
+Now that the time period has been cut off, one can see for both regressions that $\hat\beta^{DiD}$ still isn't significant. Therefore it can be surely assumed that the legalization really did not have a significant impact on the decrease of prisoner counts. As already mentioned the focus lies on the problem of autocorrelation for computing the standard errors in the DiD framework. Now this means a Data Generating Process (DGP) will be created, and an autocorrelated residual will be purposely added onto it. It might seem odd at first to purposely add an autocorrelated residual into a DGP but it is done to undermine the view of why it is important to not use OLS standard errors but use clustered ones when dealing with panel data. This is due to the OLS standard error underestimating the "real" standard error. 
+```{r}
+c <- data_pris_matrix[seq(7, nrow(data_pris_matrix), 51) ,] #all data but only on Colorado
+head(c,2)
+col_prison <- c[,4] #prisoner count only on Colorado
+
+a <- data_pris_matrix[seq(2, nrow(data_pris_matrix), 51) ,] #all data but only on Alabama
+head(a,2)
+ala_prison <- a[,4] #prisoner count only on Alabama
+
+Y_DGP <- cbind(ala_prison,col_prison) #Prisoner count on only Colorado and Alabama w/ dim 16x2 
+head(Y_DGP,4)
+X_DGP <- matrix(c(rep(0,27),rep(1,5)),16,2) #legalization yes(=1) or no (=0) for Alabama (left) and Colorado (right) 
+tail(X_DGP) #last six entries
+
+epsilon_DGP <- ar(Y_DGP, aid = FALSE, order.max = 1, method = "ols")$resid
+head(epsilon_DGP,4)
+```
+As you can see for the DGP, $Y$ contains only the prisoner count for both the Treatment and Control State (Colorado and Alabama). The covariate (here: X_DGP) is a binary variable being $1$ for legalization taking place for each state. Since that is only the case for Colorado from 2012 onwards values of $1$ are obtained for given time periods. To compute the autocorrelated residual it has been decided to make use of an AR(1). An autoregressive regression of higher order could have been used but the decision was made to stick with the simplest form for starters. Now that the DGP has been computed, it is time to compute the Standard Errors. First the OLS SE will be computed manually.
+```{r}
+###measuring SE by hand
+
+###need these variables for further calculations:
+Dummy_Treat <- ifelse(data_prison$jurisdiction=="COLORADO" | data_prison$jurisdiction=="WASHINGTON" ,1, 0)
+#Dummy for States exposed to Treatment
+Dummy_Treat_start <- ifelse(data_prison$year>=2012,1,0) #time when treatment started 
+beta_did <- Dummy_Treat * Dummy_Treat_start
+regression <- lm(Y ~ Dummy_Treat + Dummy_Treat_start + beta_did, data = data_prison)
+
+Y = Dummy_Treat + Dummy_Treat_start + beta_did
+
+#let's start
+X <- model.matrix(regression)
+n <- nobs(regression) #we have 816 observations
+epsilon_DGP_1 <- ar(Y, aid = FALSE, order.max = 1, method = "ols")$resid
+p <- ncol(X)
+sigma2 <- sum(epsilon_DGP_1[2:816]^2) / (n - p) #left out first value of epsilon due to it being "NA"
+X_inverse <- solve(t(X) %*% X, diag(p))
+regression_se <- sqrt(diag(sigma2 * X_inverse))
+regression_se
+beta_SE <- regression_se[4]
+beta_SE
+```
+So it is seen that an OLS SE of $ 0.1427835$ is received for $\beta$. Now on to using clustered SEs and looking out for differences. It was originally planned to compute the clustered standard errors by hand, so that the autocorrelated residual could be purposely added. However when checking the structure of the regression with the "str()" function, no levels could be found (i.e. a way to form clusters). That's why an inbuilt function in R was used to determine the clustered standard errors.
+```{r}
+#str(regression) <- didn't find any "levels" but only "numerical" values
+library(sandwich)
+library(lmtest)
+library(zoo) #had to download it too according to R
+
+regress_clust_se <- coeftest(regression, vcov = vcovCL, cluster = ~Dummy_Treat)
+regress_clust_se[,2]
+```
+
+Here one can see that the standard error ($2.793105e-11$) is much smaller than what has been estimated by the OLS SE. 
+<br>
+<br>
+<br>
+**Discussion**
+<br>
+The results for the computed standard errors assure the belief that the OLS standard error overestimate the 'true' standard error. This undermines not only the assumption for this assignment but also the authors' assumption that one needs to look out for autocorrelation, especially when computing standard errors. Since the block bootstrap wasn't coded, the possible outcome of such will be elaborated. The block bootstrap method would perform quite badly in this context. As the authors' in the given paper already mentioned, this is due to having a small group ($\to$ little amount of possible clusters) in this given analysis. Because block bootstraps performs poorly for small groups. The analysis in this assignment clearly shows: the legalization of recreational use of marijuana did not have a significant effect on the decrease of the prisoner count but rather that this is due to something else. All in all the main takeaway of this analysis is: to always keep an eye out on autocorrelation when working with panel data, just like it is the case for the DiD framework, and adjust these. So one won't falsely assume to have a significant effect, when in reality there is none.
+<br>
+<br>
+<br>
